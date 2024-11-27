@@ -1,14 +1,8 @@
 import { lazy } from 'react';
-const Index = lazy(() => import('../pages/Index'));
 const LoginBoxed = lazy(() => import('../pages/auth/login'));
-const RegisterBoxed = lazy(() => import('../pages/auth/register'));
+const Register = lazy(() => import('../pages/auth/register'));
+const Index = lazy(() => import('../pages/Index'));
 const routes = [
-    // dashboard
-    {
-        path: '/',
-        element: <Index />,
-        layout: 'default',
-    },
     {
         path: '/auth/login',
         element: <LoginBoxed />,
@@ -16,8 +10,13 @@ const routes = [
     },
     {
         path: '/auth/register',
-        element: <RegisterBoxed />,
+        element: <Register />,
         layout: 'blank',
+    },
+    {
+        path: '/',
+        element: <Index />,
+        layout: 'default',
     },
 ];
 

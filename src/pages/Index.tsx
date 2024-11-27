@@ -1,9 +1,6 @@
 const Index = () => {
-
     return (
-        <div>
-            <h1>starter page</h1>
-        </div>
+        <div>Hello World !</div>
     );
 };
 
