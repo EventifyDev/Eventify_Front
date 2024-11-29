@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 const Index = () => {
 
     return (
@@ -8,3 +9,14 @@ const Index = () => {
 };
 
 export default Index;
+=======
+const Index = () => {
+    return (
+        <div>
+            <h1>Hello World</h1>
+        </div>
+    );
+};
+
+export default Index;
+>>>>>>> Stashed changes
