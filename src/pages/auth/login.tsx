@@ -49,7 +49,7 @@ const LoginBoxed = () => {
         try {
           await dispatch(login(credentials)).unwrap();
           toast.success('Login successful!');
-          navigate('/');
+          navigate('/events');
         } catch (error) {
           toast.error('Invalid email or password!');
         }
