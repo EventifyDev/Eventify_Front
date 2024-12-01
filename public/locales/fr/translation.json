@@ -120,5 +120,9 @@
     "checkbox": "Case à cocher",
     "skin": "Peau",
     "sticky_header": "En-tête collant",
-    "clone_header": "Cloner l'en-tête"
+    "clone_header": "Cloner l'en-tête",
+
+    "login": "Connexion",
+    "register": "S'inscrire",
+    "Enter your email and password to register": "Entrez votre email et votre mot de passe pour vous inscrire"
 }

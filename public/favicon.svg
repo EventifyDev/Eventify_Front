@@ -1,0 +1,48 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Gradient Definition -->
+    <defs>
+        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#4361EE"/>
+            <stop offset="100%" style="stop-color:#EF1262"/>
+        </linearGradient>
+    </defs>
+
+    <!-- Background -->
+    <rect width="32" height="32" rx="8" fill="url(#gradient)"/>
+
+    <!-- Calendar Icon -->
+    <g transform="translate(6, 6)">
+        <!-- Calendar Frame -->
+        <path
+            d="M5 4C3.34315 4 2 5.34315 2 7V17C2 18.6569 3.34315 20 5 20H15C16.6569 20 18 18.6569 18 17V7C18 5.34315 16.6569 4 15 4H5Z"
+            fill="white"
+            fill-opacity="0.1"
+            stroke="white"
+            stroke-width="1.5"
+        />
+
+        <!-- Top Hangers -->
+        <path
+            d="M6 2L6 5M14 2L14 5"
+            stroke="white"
+            stroke-width="2"
+            stroke-linecap="round"
+        />
+
+        <!-- "E" Letter -->
+        <path
+            d="M7 9H13M7 12H12M7 15H11"
+            stroke="white"
+            stroke-width="2"
+            stroke-linecap="round"
+        />
+
+        <!-- Decorative Dot -->
+        <circle
+            cx="13"
+            cy="15"
+            r="1"
+            fill="#EF1262"
+        />
+    </g>
+</svg>
