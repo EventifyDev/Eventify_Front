@@ -1,8 +1,6 @@
-```markdown:README.md
-  
-  # Eventify
+# Eventify
 
-  ## A modern event management platform built with React, TypeScript, and Tailwind CSS
+## A modern event management platform built with React, TypeScript, and Tailwind CSS
 
 ## ✨ Features
 
