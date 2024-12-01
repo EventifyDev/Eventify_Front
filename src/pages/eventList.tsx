@@ -12,6 +12,7 @@ import { CreateEventForm } from '../components/CreateEventForm';
 import { Toaster, toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Pagination } from '../components/Pagination';
+import EventLoader from '../components/EventLoader';
 
 const EventList: React.FC = () => {
   // State Management
@@ -120,9 +121,7 @@ const EventList: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64 text-dark-DEFAULT">
-        Loading...
-      </div>
+      <EventLoader />
     );
   }
 

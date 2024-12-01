@@ -61,6 +61,18 @@ export default {
             fontFamily: {
                 nunito: ['Nunito', 'sans-serif'],
             },
+            animation: {
+                'spin-slow': 'spin 3s linear infinite',
+                'progress': 'progress 1.5s ease-in-out infinite',
+                'bounce': 'bounce 1s infinite',
+            },
+            keyframes: {
+                progress: {
+                    '0%': { transform: 'translateX(-100%)' },
+                    '50%': { transform: 'translateX(0%)' },
+                    '100%': { transform: 'translateX(100%)' }
+                }
+            },
         },
     },
     plugins: [],

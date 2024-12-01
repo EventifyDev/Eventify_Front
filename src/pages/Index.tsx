@@ -16,6 +16,7 @@ import {
     Star
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import EventLoader from '../components/EventLoader';
 
 // Types pour les statistiques
 interface EventStats {
@@ -134,7 +135,7 @@ const Index = () => {
     return (
         <div className="p-6 space-y-6">
             {loading ? (
-                <LoadingSpinner />
+                <EventLoader />
             ) : (
                 <>
                     {/* Header Section */}
@@ -172,15 +173,6 @@ const Index = () => {
 };
 
 export default Index;
-
-const LoadingSpinner = () => (
-    <div className="flex items-center justify-center h-[400px]">
-        <div className="relative">
-            <div className="w-16 h-16 border-4 border-primary border-dashed rounded-full animate-spin"></div>
-            <div className="w-16 h-16 border-4 border-primary/30 rounded-full absolute top-0"></div>
-        </div>
-    </div>
-);
 
 const HeaderSection = ({ user, trends }: { user: any, trends: EventStats }) => (
     <div className="relative overflow-hidden bg-gradient-to-r from-primary/5 to-secondary/5 rounded-2xl p-6 mb-6">
