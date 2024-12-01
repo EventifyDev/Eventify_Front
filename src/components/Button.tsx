@@ -13,12 +13,11 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   return (
     <button 
-      className={`w-full py-2.5 px-4 rounded-md font-semibold transition-all duration-300 
-        flex items-center justify-center gap-2 btn-gradient
-        text-white hover:bg-primary-light ${className}`}
+      className={`py-2.5 px-4 rounded-md font-semibold transition-all duration-300 
+        flex items-center justify-center gap-2 ${className}`}
       {...props}
     >
-      <span className='flex flex-row items-center'>{children}</span>
+      <span className='flex items-center justify-center'>{children}</span>
       {icon && <ArrowRight className="w-4 h-4" />}
     </button>
   );
