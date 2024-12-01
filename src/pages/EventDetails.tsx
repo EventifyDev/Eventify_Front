@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, MapPin, Users, Clock, Share2, BookmarkPlus, TrashIcon, PencilIcon, UsersIcon } from 'lucide-react';
+import { Calendar, MapPin, Users, TrashIcon, PencilIcon, UsersIcon, AlertCircle, ChevronRightIcon } from 'lucide-react';
 import { Event } from '../types/event.type';
 import { formatDate } from '../utils/DateUtils';
 import { Button } from '../components/Button';
@@ -259,101 +259,111 @@ const EventDetails: React.FC = () => {
 
         {/* Sidebar */}
         <div className="lg:col-span-1">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-xl border border-slate-100 dark:border-slate-800 sticky top-4">
+          <div className="bg-white dark:bg-slate-900/95 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-slate-100/50 dark:border-slate-700/50 sticky top-4 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5">
             {/* Event Status Badge */}
             <div className="flex justify-between items-center mb-6">
-              <span className="px-4 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-sm font-medium rounded-full">
-                {participantCount >= event.capacity ? 'Event Full' : 'Active Event'}
-              </span>
+              {participantCount >= event.capacity ? (
+                <span className="px-4 py-2 bg-red-100/80 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-sm font-medium rounded-full animate-pulse">
+                  Event Full
+                </span>
+              ) : (
+                <span className="px-4 py-2 bg-emerald-100/80 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-sm font-medium rounded-full">
+                  Active Event
+                </span>
+              )}
             </div>
 
             {/* Registration Progress */}
-            <div className="mb-6">
-              <div className="flex justify-between items-center mb-2">
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-3">
                 <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
                   Registration Progress
                 </span>
-                <span className="text-sm font-semibold text-primary">
+                <span className="text-sm font-semibold bg-primary/10 text-primary px-2 py-1 rounded-md">
                   {participantCount}/{event.capacity}
                 </span>
               </div>
-              <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+              <div className="w-full h-3 bg-slate-100 dark:bg-slate-700/50 rounded-full overflow-hidden p-0.5">
                 <div
-                  className="h-full bg-primary rounded-full transition-all duration-300"
+                  className="h-full btn-gradient rounded-full transition-all duration-500 ease-out"
                   style={{
                     width: `${Math.min((participantCount / event.capacity) * 100, 100)}%`
                   }}
                 />
               </div>
               {participantCount >= event.capacity && (
-                <p className="text-xs text-red-500 mt-1">
-                  Event is full
+                <p className="text-xs text-red-500 mt-2 flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  No spots remaining
                 </p>
               )}
             </div>
 
             {/* Main Action Button */}
-            <Button
-              className="w-full mb-6 btn-gradient"
+            <button
               onClick={() => setIsRegisterModalOpen(true)}
-              icon={false}
+              disabled={participantCount >= event.capacity}
+              className="w-full mb-8 px-6 py-3 btn-gradient text-white rounded-xl font-medium 
+                transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] 
+                disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
+                flex items-center justify-center gap-2 group"
             >
-              <UsersIcon className="w-5 h-5 mr-2" />
-              Add Participant
-            </Button>
+              <UsersIcon className="w-5 h-5 transition-transform group-hover:scale-110" />
+              {participantCount >= event.capacity ? 'Event Full' : 'Add Participant'}
+            </button>
 
             {/* Quick Actions */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <Button
-                icon={false}
+            <div className="grid grid-cols-2 gap-4 mb-8">
+              <button
                 onClick={() => setIsEditModalOpen(true)}
-                className="group flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-300"
+                className="group flex flex-col items-center p-4 bg-slate-50/50 dark:bg-slate-800/30 
+                rounded-2xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-300
+                border border-slate-100 dark:border-slate-700/50 hover:border-blue-200 dark:hover:border-blue-800"
               >
-                <div className="flex flex-col items-center">
-                  <div className="p-2 bg-blue-100/50 dark:bg-blue-900/30 rounded-lg mb-2 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors duration-300">
-                    <PencilIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Edit</span>
+                <div className="p-3 bg-blue-100/80 dark:bg-blue-900/50 rounded-xl mb-2 
+                group-hover:bg-blue-200 dark:group-hover:bg-blue-900/70 transition-colors duration-300">
+                  <PencilIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 transition-transform group-hover:scale-110" />
                 </div>
-              </Button>
-              <Button
-                icon={false}
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Edit Event</span>
+              </button>
+
+              <button
                 onClick={handleDeleteClick}
-                className="group flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-300"
+                className="group flex flex-col items-center p-4 bg-slate-50/50 dark:bg-slate-800/30 
+                 rounded-2xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-300
+                 border border-slate-100 dark:border-slate-700/50 hover:border-red-200 dark:hover:border-red-800"
               >
-                <div className="flex flex-col items-center">
-                  <div className="p-2 bg-red-100/50 dark:bg-red-900/30 rounded-lg mb-2 group-hover:bg-red-100 dark:group-hover:bg-red-900/50 transition-colors duration-300">
-                    <TrashIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
-                  </div>
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Delete</span>
+                <div className="p-3 bg-red-100/80 dark:bg-red-900/50 rounded-xl mb-2 
+                  group-hover:bg-red-200 dark:group-hover:bg-red-900/70 transition-colors duration-300">
+                  <TrashIcon className="w-5 h-5 text-red-600 dark:text-red-400 transition-transform group-hover:scale-110" />
                 </div>
-              </Button>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Delete Event</span>
+              </button>
             </div>
 
-            {/* Additional Info Cards */}
-            <div className="space-y-3">
-              <Button
-                icon={false}
-                onClick={() => navigate(`/events/${event._id}/participants`)}
-                className="w-full group hover:bg-slate-50 dark:hover:bg-slate-800/80 rounded-xl p-4 transition-all duration-300"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors duration-300">
-                      <UsersIcon className="w-5 h-5 text-primary" />
-                    </div>
-                    <div className="text-left">
-                      <span className="block text-sm font-medium text-slate-700 dark:text-slate-200">
-                        View Participants
-                      </span>
-                      <span className="text-xs text-slate-500 dark:text-slate-400">
-                        See who's attending
-                      </span>
-                    </div>
+            {/* View Participants Button */}
+            <button
+              onClick={() => navigate(`/events/${event._id}/participants`)}
+              className="w-full group hover:bg-slate-50 dark:hover:bg-slate-800/80 rounded-2xl p-4 transition-all duration-300
+              border border-slate-100 dark:border-slate-700/50 hover:border-primary/20"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors duration-300">
+                    <UsersIcon className="w-5 h-5 text-primary transition-transform group-hover:scale-110" />
+                  </div>
+                  <div className="text-left">
+                    <span className="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                      View Participants
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                      {participantCount} people attending
+                    </span>
                   </div>
                 </div>
-              </Button>
-            </div>
+                <ChevronRightIcon className="w-5 h-5 text-slate-400 group-hover:text-primary transition-transform group-hover:translate-x-1" />
+              </div>
+            </button>
           </div>
         </div>
       </div>

@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { IRootState } from '../../store';
-import { toggleRTL, toggleTheme,toggleSidebar } from '../../store/themeConfigSlice';
+import { toggleRTL, toggleTheme, toggleSidebar } from '../../store/themeConfigSlice';
 import { useTranslation } from 'react-i18next';
 import i18next from 'i18next';
 import Dropdown from '../Dropdown';
 import { useAuth } from '../../hooks/useAuth';
+import EventifyLogo from '../EventifyLogo';
 
 const Header = () => {
     const location = useLocation();
@@ -119,58 +120,9 @@ const Header = () => {
             <div className="shadow-sm">
                 <div className="relative bg-white flex w-full items-center px-5 py-2.5 dark:bg-black">
                     <div className="horizontal-logo flex lg:hidden justify-between items-center ltr:mr-2 rtl:ml-2">
-                    <NavLink to="/" className="main-logo flex items-center shrink-0 group">
+                        <NavLink to="/" className="main-logo flex items-center shrink-0 group">
                             {/* Logo Icon */}
-                            <div className="relative w-10 h-10 flex items-center justify-center">
-                                {/* Animated background circles */}
-                                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-[#4361EE] to-[#EF1262] group-hover:rotate-180 transition-all duration-700"></div>
-                                <div className="absolute inset-[2px] rounded-[10px] bg-slate-950/40 backdrop-blur-sm"></div>
-
-                                {/* Creative Calendar Icon */}
-                                <svg
-                                    className="relative w-7 h-7 text-white group-hover:scale-110 transition-all duration-300"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    {/* Top Rings */}
-                                    <circle cx="8" cy="3" r="1.5" fill="currentColor" className="animate-pulse" />
-                                    <circle cx="16" cy="3" r="1.5" fill="currentColor" className="animate-pulse" />
-
-                                    {/* Calendar Body with Animation */}
-                                    <path
-                                        d="M20 10V7C20 5.34315 18.6569 4 17 4H7C5.34315 4 4 5.34315 4 7V10"
-                                        stroke="currentColor"
-                                        strokeWidth="1.5"
-                                        className="group-hover:stroke-[#EF1262] transition-colors duration-300"
-                                    />
-                                    <path
-                                        d="M20 10V19C20 20.6569 18.6569 22 17 22H7C5.34315 22 4 20.6569 4 19V10"
-                                        stroke="currentColor"
-                                        strokeWidth="1.5"
-                                        className="group-hover:stroke-[#4361EE] transition-colors duration-300"
-                                    />
-
-                                    {/* Decorative Lines */}
-                                    <path
-                                        d="M4 10H20"
-                                        stroke="currentColor"
-                                        strokeWidth="1.5"
-                                        strokeLinecap="round"
-                                        className="group-hover:stroke-white transition-colors duration-300"
-                                    />
-
-                                    {/* Star/Event Marker */}
-                                    <path
-                                        d="M12 16L12 16.01M12 13L12 13.01M12 19L12 19.01M15 16L15 16.01M15 13L15 13.01M15 19L15 19.01M9 16L9 16.01M9 13L9 13.01M9 19L9 19.01"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        className="group-hover:stroke-[#EF1262] transition-colors duration-300"
-                                    />
-                                </svg>
-                            </div>
+                            <EventifyLogo />
 
                             {/* Logo Text */}
                             <div className="ml-3 relative group-hover:scale-105 transition-transform duration-300">
@@ -238,10 +190,9 @@ const Header = () => {
                         <div>
                             {themeConfig.theme === 'light' ? (
                                 <button
-                                    className={`${
-                                        themeConfig.theme === 'light' &&
+                                    className={`${themeConfig.theme === 'light' &&
                                         'flex items-center p-2 rounded-full bg-white-light/40 dark:bg-dark/40 hover:text-primary hover:bg-white-light/90 dark:hover:bg-dark/60'
-                                    }`}
+                                        }`}
                                     onClick={() => {
                                         dispatch(toggleTheme('dark'));
                                     }}
@@ -263,10 +214,9 @@ const Header = () => {
                             )}
                             {themeConfig.theme === 'dark' && (
                                 <button
-                                    className={`${
-                                        themeConfig.theme === 'dark' &&
+                                    className={`${themeConfig.theme === 'dark' &&
                                         'flex items-center p-2 rounded-full bg-white-light/40 dark:bg-dark/40 hover:text-primary hover:bg-white-light/90 dark:hover:bg-dark/60'
-                                    }`}
+                                        }`}
                                     onClick={() => {
                                         dispatch(toggleTheme('system'));
                                     }}
@@ -281,10 +231,9 @@ const Header = () => {
                             )}
                             {themeConfig.theme === 'system' && (
                                 <button
-                                    className={`${
-                                        themeConfig.theme === 'system' &&
+                                    className={`${themeConfig.theme === 'system' &&
                                         'flex items-center p-2 rounded-full bg-white-light/40 dark:bg-dark/40 hover:text-primary hover:bg-white-light/90 dark:hover:bg-dark/60'
-                                    }`}
+                                        }`}
                                     onClick={() => {
                                         dispatch(toggleTheme('light'));
                                     }}
