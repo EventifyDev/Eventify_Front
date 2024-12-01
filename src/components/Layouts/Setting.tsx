@@ -109,10 +109,7 @@ const Setting = () => {
                     <div className="border border-dashed border-white-light dark:border-[#1b2e4b] rounded-md mb-3 p-3">
                         <h5 className="mb-1 text-base dark:text-white leading-none">Navigation Position</h5>
                         <p className="text-white-dark text-xs">Select the primary navigation paradigm for your app.</p>
-                        <div className="grid grid-cols-3 gap-2 mt-3">
-                            <button type="button" className={`${themeConfig.menu === 'horizontal' ? 'btn-primary' : 'btn-outline-primary'} btn`} onClick={() => dispatch(toggleMenu('horizontal'))}>
-                                Horizontal
-                            </button>
+                        <div className="grid grid-cols-2 gap-2 mt-3">
 
                             <button type="button" className={`${themeConfig.menu === 'vertical' ? 'btn-primary' : 'btn-outline-primary'} btn`} onClick={() => dispatch(toggleMenu('vertical'))}>
                                 Vertical
