@@ -19,7 +19,21 @@ export enum EventType {
     capacity: number;
     location: string;
     eventType: EventType;
-    imageUrl: string;
+    image: string;
     createdAt: Date;
     updatedAt: Date;
   }
+
+  export interface EventFormData {
+    name: string;
+    description: string;
+    date: string;
+    capacity: string;
+    location: string;
+    eventType: EventType;
+}
+
+export interface PaginatedEvents {
+  events: Event[];
+  total: number;
+}
