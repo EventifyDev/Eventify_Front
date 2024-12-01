@@ -1,21 +1,8 @@
 ```markdown:README.md
-<div align="center">
-  <img src="public/favicon.svg" alt="Eventify Logo" width="80" height="80" />
   
   # Eventify
-  
-  <p align="center">
-    A modern event management platform built with React, TypeScript, and Tailwind CSS
-  </p>
 
-  <p>
-    <a href="#features">Features</a> •
-    <a href="#tech-stack">Tech Stack</a> •
-    <a href="#getting-started">Getting Started</a> •
-    <a href="#architecture">Architecture</a> •
-    <a href="#contributing">Contributing</a>
-  </p>
-</div>
+  ## A modern event management platform built with React, TypeScript, and Tailwind CSS
 
 ## ✨ Features
 
@@ -127,9 +114,7 @@ Eventify supports system-wide dark mode with custom color schemes:
 
 ### Environment Variables
 ```env
-VITE_API_URL=your_api_url
-VITE_AUTH_DOMAIN=your_auth_domain
-VITE_STORAGE_BUCKET=your_storage_bucket
+REACT_APP_API_URL=your_api_url
 ```
 
 ## 📱 Responsive Design
@@ -148,10 +133,6 @@ Eventify uses Tailwind's responsive breakpoints:
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
@@ -175,19 +156,7 @@ Track our project progress on [Jira](https://elmorjanimohamed.atlassian.net/jira
 - 🛠️ Task
 - 📝 Story
 
-#### Labels
-- `priority/high`
-- `priority/medium`
-- `priority/low`
-- `type/feature`
-- `type/bug`
-- `type/enhancement`
-
-### Branch Naming Convention
-
----
-
 <div align="center">
-  <sub>Built with ❤️ by Your Team</sub>
+  <sub>Built with ❤️ by Mohamed Elmorjani</sub>
 </div>
 ```
