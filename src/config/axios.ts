@@ -1,33 +1,66 @@
 import axios from 'axios';
-import { TokenService } from '../services/token.service';
+import { store } from '../store';
 import { logout } from '../store/authSlice';
-import store from '../store';
-
-const API_URL = import.meta.env.REACT_APP_API_URL || 'http://localhost:3000/api/v1';
+import { TokenService } from '../services/token.service';
 
 export const api = axios.create({
-  baseURL: API_URL,
+  baseURL: import.meta.env.REACT_APP_API_URL || 'http://localhost:3000/api/v1',
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
-  },
+    'X-Requested-With': 'XMLHttpRequest'
+  }
 });
 
-// add token to request
-api.interceptors.request.use((config) => {
-  const token = TokenService.getToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+api.interceptors.request.use(
+  config => {
+    const token = TokenService.getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  error => Promise.reject(error)
+);
 
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
+  response => response,
+  async error => {
+    const originalRequest = error.config;
+    const isUnauthorized = error.response?.status === 401;
+    const isLoginAttempt = originalRequest.url?.includes('/auth/login');
+    const isFirstRetry = !originalRequest._retry;
+    const isLogoutRequired = error.response?.data?.logout === true;
+
+    if (isLogoutRequired) {
+      TokenService.clearTokens();
       store.dispatch(logout());
-      window.location.href = '/auth/login';
+      return Promise.reject(error);
     }
+
+    if (isUnauthorized && isFirstRetry && !isLoginAttempt) {
+      originalRequest._retry = true;
+
+      try {
+        const response = await api.post('/auth/refresh');
+        const { accessToken, refreshToken } = response.data;
+        
+        if (accessToken) {
+          TokenService.setToken(accessToken);
+          
+          if (refreshToken) {
+            TokenService.setRefreshToken(refreshToken);
+          }
+          
+          return api(originalRequest);
+        }
+      } catch (refreshError) {
+        TokenService.clearTokens();
+        store.dispatch(logout());
+        return Promise.reject(refreshError);
+      }
+    }
+
     return Promise.reject(error);
   }
 );

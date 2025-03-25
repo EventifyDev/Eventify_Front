@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import BlankLayout from '../components/Layouts/BlankLayout';
 import DefaultLayout from '../components/Layouts/DefaultLayout';
+import MainLayout from '../components/Layouts/MainLayout';
 import { routes } from './routes';
 import { AuthProvider } from '../providers/AuthProvider';
 
@@ -10,6 +11,8 @@ const finalRoutes = routes.map((route) => ({
         <AuthProvider>
             {route.layout === 'blank' ? (
                 <BlankLayout>{route.element}</BlankLayout>
+            ) : route.layout === 'main' ? (
+                <MainLayout>{route.element}</MainLayout>
             ) : (
                 <DefaultLayout>{route.element}</DefaultLayout>
             )}

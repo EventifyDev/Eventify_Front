@@ -26,7 +26,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         <Suspense>
             <Provider store={store}>
                     <RouterProvider router={router} />
-                    <Toaster position="bottom-right" richColors />
+                    <Toaster position="top-center" richColors />
             </Provider>
         </Suspense>
     </React.StrictMode>

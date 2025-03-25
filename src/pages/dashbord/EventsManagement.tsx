@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Event } from '../types/event.type';
-import { EventCard } from '../components/EventCard';
-import { EventService } from '../services/event.service';
-import { getProfile, selectAuth } from '../store/authSlice';
-import { AppDispatch } from '../store/index';
-import { Button } from '../components/Button';
-import { Plus } from 'lucide-react';
-import { Modal } from '../components/Modal';
-import { CreateEventForm } from '../components/CreateEventForm';
-import { Toaster, toast } from 'sonner';
+import { Event } from '../../types/event.type';
+import { EventCard } from '../../components/EventCard';
+import { EventService } from '../../services/event.service';
+import { getProfile, selectAuth } from '../../store/authSlice';
+import { AppDispatch } from '../../store/index';
+import { Button } from '../../components/Button';
+import { Plus, Loader2 } from 'lucide-react';
+import { Modal } from '../../components/Modal';
+import { CreateEventForm } from '../../components/CreateEventForm';
+import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { Pagination } from '../components/Pagination';
-import EventLoader from '../components/EventLoader';
+import EventLoader from '../../components/EventLoader';
 
 const EventList: React.FC = () => {
   // State Management
@@ -20,26 +19,23 @@ const EventList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalEvents, setTotalEvents] = useState(0);
+  const [displayedEvents, setDisplayedEvents] = useState<Event[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  // Constants
-  const eventsPerPage = 6;
   const eventService = new EventService();
 
-  // Hooks
   const dispatch = useDispatch<AppDispatch>();
   const { user, isAuthenticated } = useSelector(selectAuth);
   const navigate = useNavigate();
 
-  // Load user profile
   useEffect(() => {
     const loadProfile = async () => {
       if (isAuthenticated && !user) {
         try {
           await dispatch(getProfile()).unwrap();
         } catch (error) {
-          console.error('Failed to load profile:', error);
           toast.error('Failed to load user profile');
         }
       }
@@ -48,38 +44,39 @@ const EventList: React.FC = () => {
     loadProfile();
   }, [isAuthenticated, dispatch, user]);
 
-  // Fetch events
   useEffect(() => {
     const fetchEvents = async () => {
-      if (!user?._id) {
-        setLoading(false);
-        return;
-      }
-
       try {
-        const data = await eventService.getAllEvents(user._id);
-        setEvents(data);
-        setTotalEvents(data.length);
-      } catch (error) {
-        console.error('Error fetching events:', error);
-        toast.error('Failed to fetch events');
+        if (!user?._id) {
+          setEvents([]);
+          return;
+        }
+
+        const response = await eventService.getOrganizerEvents(user._id);
+        
+        if (!response) {
+          setEvents([]);
+          return;
+        }
+        setEvents(response);
+        setTotalEvents(response.length);
+        setDisplayedEvents(response.slice(0, 6)); // Display first 6 events
+        setHasMore(response.length > 6); // Check if there are more events
+      } catch (error: any) {
+        if (error.response?.status === 404) {
+          setEvents([]);
+        }
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchEvents();
-  }, [user, eventService]);
-
-  // Pagination calculations
-  const indexOfLastEvent = currentPage * eventsPerPage;
-  const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
-  const currentEvents = events.slice(indexOfFirstEvent, indexOfLastEvent);
-  const totalPages = Math.ceil(events.length / eventsPerPage);
+  }, [user?._id]);
 
   // Event Handlers
   const handleEventDetails = (eventId: string) => {
-    navigate(`/events/${eventId}`);
+    navigate(`/dashboard/events/${eventId}`);
   };
 
   const handleSubmit = async (formData: FormData) => {
@@ -87,14 +84,20 @@ const EventList: React.FC = () => {
     try {
       await eventService.createEvent(formData);
       setIsCreateModalOpen(false);
-      if (user?._id) {
-        const data = await eventService.getAllEvents(user._id);
-        setEvents(data);
-        setTotalEvents(data.length);
+      
+      try {
+        const data = await eventService.getOrganizerEvents(user?._id || '');
+        setEvents(data || []);
+        setTotalEvents(data.length || 0);
+        setDisplayedEvents(data.slice(0, 6)); // Reset displayed events
+        setHasMore(data.length > 6); // Reset hasMore state
+      } catch (error: any) {
+        toast.error('Event created, but failed to refresh event list');
       }
+      
       toast.success('Event created successfully!');
+      window.dispatchEvent(new CustomEvent('EVENT_UPDATED'));
     } catch (error) {
-      console.error('Failed to create event:', error);
       toast.error('Failed to create event');
     } finally {
       setIsCreating(false);
@@ -105,12 +108,18 @@ const EventList: React.FC = () => {
     setIsCreateModalOpen(false);
   };
 
-  const handlePageChange = (pageNumber: number) => {
-    setCurrentPage(pageNumber);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const handleLoadMore = async () => {
+    setIsLoadingMore(true);
+    try {
+      const currentLength = displayedEvents.length;
+      const newEvents = events.slice(currentLength, currentLength + 6);
+      setDisplayedEvents([...displayedEvents, ...newEvents]);
+      setHasMore(currentLength + 6 < events.length);
+    } finally {
+      setIsLoadingMore(false);
+    }
   };
 
-  // Conditional Renders
   if (!isAuthenticated) {
     return (
       <div className="flex items-center justify-center h-64 text-dark-DEFAULT font-semibold">
@@ -128,7 +137,6 @@ const EventList: React.FC = () => {
   // Main Render
   return (
     <div className="container mx-auto px-4 min-h-screen">
-      <Toaster richColors />
 
       {/* Header Section */}
       <div className="relative mb-8">
@@ -188,8 +196,8 @@ const EventList: React.FC = () => {
 
       {/* Events Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-6 border-t border-gray-300 dark:border-slate-800">
-        {currentEvents.length > 0 ? (
-          currentEvents.map((event) => (
+        {displayedEvents && displayedEvents.length > 0 ? (
+          displayedEvents.map((event) => (
             <EventCard
               key={event._id}
               event={event}
@@ -245,19 +253,36 @@ const EventList: React.FC = () => {
         )}
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-8 mb-6">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-            className="flex justify-center"
-          />
+      {/* Load More Button */}
+      {hasMore && (
+        <div className="text-center mt-16">
+          <button
+            onClick={handleLoadMore}
+            disabled={isLoadingMore}
+            className="group relative px-10 py-4 bg-white dark:bg-slate-800 border-2 
+                border-primary/20 rounded-xl hover:border-primary transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed
+                overflow-hidden"
+          >
+            {/* Button Content */}
+            <div className="relative flex items-center justify-center gap-3">
+              {isLoadingMore ? (
+                <>
+                  <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                  <span className="text-primary font-medium">Loading More Events...</span>
+                </>
+              ) : (
+                <span className="text-primary font-medium">Load More Events</span>
+              )}
+            </div>
+
+            {/* Shimmer Effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent 
+                transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000
+                pointer-events-none" />
+          </button>
         </div>
       )}
 
-      {/* Create Event Modal */}
       <Modal
         isOpen={isCreateModalOpen}
         onClose={handleCloseModal}

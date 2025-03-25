@@ -1,223 +1,151 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { setPageTitle, toggleRTL } from '../../store/themeConfigSlice';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { setPageTitle } from '../../store/themeConfigSlice';
 import { useEffect, useState } from 'react';
-import Dropdown from '../../components/Dropdown';
-import i18next from 'i18next';
-import { Toaster, toast } from 'sonner'
-import IconCaretDown from '../../components/Icon/IconCaretDown';
+import { toast } from 'sonner';
 import IconUser from '../../components/Icon/IconUser';
 import IconMail from '../../components/Icon/IconMail';
 import IconLockDots from '../../components/Icon/IconLockDots';
-import IconInstagram from '../../components/Icon/IconInstagram';
-import IconFacebookCircle from '../../components/Icon/IconFacebookCircle';
-import IconTwitter from '../../components/Icon/IconTwitter';
 import IconGoogle from '../../components/Icon/IconGoogle';
 import { selectAuth, register, clearRegistrationSuccess } from '../../store/authSlice';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { IRootState } from '../../store';
-import Loader from '../../components/Loader';
+import Loader from '../../components/ui/Loader';
+import { registerValidationSchema } from '../../validations/registerValidation';
+import LanguageSwitcher from '../../components/LanguageSwitcher';
+import { useFormik } from 'formik';
+import { Input } from '../../components/forms/Input';
 
 const Register = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
-
-    // Selectors
-    const {error, registrationSuccess } = useAppSelector(selectAuth);
-    const isDark = useSelector((state: IRootState) => state.themeConfig.theme === 'dark' || state.themeConfig.isDarkMode);
-    const isRtl = useSelector((state: IRootState) => state.themeConfig.rtlClass) === 'rtl' ? true : false;
-    const themeConfig = useSelector((state: IRootState) => state.themeConfig);
-
-    // States
-    const [formData, setFormData] = useState({
-        username: '',
-        email: '',
-        password: '',
-    });
-    const [flag, setFlag] = useState(themeConfig.locale);
+    const { registrationSuccess } = useAppSelector(selectAuth);
+    const [searchParams] = useSearchParams();
+    const role = searchParams.get('role') || 'Participant';
     const [isLoading, setIsLoading] = useState(false);
 
-    // Effects
     useEffect(() => {
         dispatch(setPageTitle('Register'));
     }, [dispatch]);
+
+    const formik = useFormik({
+        initialValues: {
+            username: '',
+            email: '',
+            password: '',
+            role: role,
+        },
+        validationSchema: registerValidationSchema,
+        onSubmit: async (values) => {
+            setIsLoading(true);
+            try {
+                await dispatch(register(values)).unwrap();
+            } catch (error: any) {
+                if (error.message.includes('Email already exists')) {
+                    toast.error('Email is already registered!');
+                } else {
+                    toast.error('Registration failed!');
+                }
+            } finally {
+                setIsLoading(false);
+            }
+        },
+    });
 
     useEffect(() => {
         if (registrationSuccess) {
             setIsLoading(false);
             dispatch(clearRegistrationSuccess());
-            toast.success('Registration successful!');
-            setTimeout(() => {
-                navigate('/auth/login');
-            }, 2000);
+            toast.success('Registration successful!', {
+                description: 'email verification link has been sent to your email address',
+              });
+            navigate(`/auth/verify-otp?email=${encodeURIComponent(formik.values.email)}`);
         }
     }, [registrationSuccess, navigate, dispatch]);
 
-    // Handlers
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setIsLoading(true);
-        try {
-            await dispatch(register(formData)).unwrap();
-        } catch (error) {
-            toast.error('Registration failed!');
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const setLocale = (flag: string) => {
-        setFlag(flag);
-        if (flag.toLowerCase() === 'ae') {
-            dispatch(toggleRTL('rtl'));
-        } else {
-            dispatch(toggleRTL('ltr'));
-        }
+    const handleGoogleAuth = () => {
+        window.location.href = `http://localhost:3000/api/v1/auth/google?role=${role}`;
     };
 
     return (
         <div>
-            <Toaster richColors />
             {isLoading && <Loader />}
             <div className="absolute inset-0">
-                <img src="/assets/images/auth/bg-gradient.png" alt="image" className="h-full w-full object-cover" />
+                <img src="/assets/images/auth/bg-gradient.png" alt="Background gradient" className="h-full w-full object-cover" />
             </div>
 
             <div className="relative flex min-h-screen items-center justify-center bg-[url(/assets/images/auth/map.png)] bg-cover bg-center bg-no-repeat px-6 py-10 dark:bg-[#060818] sm:px-16">
-                <img src="/assets/images/auth/coming-soon-object1.png" alt="image" className="absolute left-0 top-1/2 h-full max-h-[893px] -translate-y-1/2" />
-                <img src="/assets/images/auth/coming-soon-object2.png" alt="image" className="absolute left-24 top-0 h-40 md:left-[30%]" />
-                <img src="/assets/images/auth/coming-soon-object3.png" alt="image" className="absolute right-0 top-0 h-[300px]" />
-                <img src="/assets/images/auth/polygon-object.svg" alt="image" className="absolute bottom-0 end-[28%]" />
+                <img src="/assets/images/auth/coming-soon-object1.png" alt="Decorative left side element" className="absolute left-0 top-1/2 h-full max-h-[893px] -translate-y-1/2" />
+                <img src="/assets/images/auth/coming-soon-object2.png" alt="Decorative top element" className="absolute left-24 top-0 h-40 md:left-[30%]" />
+                <img src="/assets/images/auth/coming-soon-object3.png" alt="Decorative right top element" className="absolute right-0 top-0 h-[300px]" />
+                <img src="/assets/images/auth/polygon-object.svg" alt="Decorative polygon" className="absolute bottom-0 end-[28%]" />
                 <div className="relative w-full max-w-[870px] rounded-md bg-[linear-gradient(45deg,#fff9f9_0%,rgba(255,255,255,0)_25%,rgba(255,255,255,0)_75%,_#fff9f9_100%)] p-2 dark:bg-[linear-gradient(52.22deg,#0E1726_0%,rgba(14,23,38,0)_18.66%,rgba(14,23,38,0)_51.04%,rgba(14,23,38,0)_80.07%,#0E1726_100%)]">
                     <div className="relative flex flex-col justify-center rounded-md bg-white/60 backdrop-blur-lg dark:bg-black/50 px-6 lg:min-h-[758px] py-20">
                         <div className="absolute top-6 end-6">
-                            <div className="dropdown">
-                                <Dropdown
-                                    offset={[0, 8]}
-                                    placement={`${isRtl ? 'bottom-start' : 'bottom-end'}`}
-                                    btnClassName="flex items-center gap-2.5 rounded-lg border border-white-dark/30 bg-white px-2 py-1.5 text-white-dark hover:border-primary hover:text-primary dark:bg-black"
-                                    button={
-                                        <>
-                                            <div>
-                                                <img src={`/assets/images/flags/${flag.toUpperCase()}.svg`} alt="image" className="h-5 w-5 rounded-full object-cover" />
-                                            </div>
-                                            <div className="text-base font-bold uppercase">{flag}</div>
-                                            <span className="shrink-0">
-                                                <IconCaretDown />
-                                            </span>
-                                        </>
-                                    }
-                                >
-                                    <ul className="!px-2 text-dark dark:text-white-dark grid grid-cols-2 gap-2 font-semibold dark:text-white-light/90 w-[280px]">
-                                        {themeConfig.languageList.map((item: any) => {
-                                            return (
-                                                <li key={item.code}>
-                                                    <button
-                                                        type="button"
-                                                        className={`flex w-full hover:text-primary rounded-lg ${flag === item.code ? 'bg-primary/10 text-primary' : ''}`}
-                                                        onClick={() => {
-                                                            i18next.changeLanguage(item.code);
-                                                            // setFlag(item.code);
-                                                            setLocale(item.code);
-                                                        }}
-                                                    >
-                                                        <img src={`/assets/images/flags/${item.code.toUpperCase()}.svg`} alt="flag" className="w-5 h-5 object-cover rounded-full" />
-                                                        <span className="ltr:ml-3 rtl:mr-3">{item.name}</span>
-                                                    </button>
-                                                </li>
-                                            );
-                                        })}
-                                    </ul>
-                                </Dropdown>
-                            </div>
+                            <LanguageSwitcher />
                         </div>
                         <div className="mx-auto w-full max-w-[440px]">
                             <div className="mb-10">
                                 <h1 className="text-3xl font-extrabold uppercase !leading-snug text-primary md:text-4xl">Sign Up</h1>
                                 <p className="text-base font-bold leading-normal text-white-dark">Enter your email and password to register</p>
                             </div>
-                            <form className="space-y-5 dark:text-white" onSubmit={handleSubmit}>
-                                <div>
-                                    <label htmlFor="username">Username</label>
-                                    <div className="relative text-white-dark">
-                                        <input id="username" type="text" value={formData.username} onChange={(e) => setFormData({ ...formData, username: e.target.value })} placeholder="Enter Username" className="form-input ps-10 placeholder:text-white-dark" />
-                                        <span className="absolute start-4 top-1/2 -translate-y-1/2">
-                                            <IconUser fill={true} />
-                                        </span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label htmlFor="email">Email</label>
-                                    <div className="relative text-white-dark">
-                                        <input id="email" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} placeholder="Enter Email" className="form-input ps-10 placeholder:text-white-dark" />
-                                        <span className="absolute start-4 top-1/2 -translate-y-1/2">
-                                            <IconMail fill={true} />
-                                        </span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label htmlFor="Password">Password</label>
-                                    <div className="relative text-white-dark">
-                                        <input id="password" type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} placeholder="Enter Password" className="form-input ps-10 placeholder:text-white-dark" />
-                                        <span className="absolute start-4 top-1/2 -translate-y-1/2">
-                                            <IconLockDots fill={true} />
-                                        </span>
-                                    </div>
-                                </div>
-                                <button type="submit" disabled={isLoading} className="btn btn-gradient !mt-6 w-full border-0 uppercase shadow-[0_10px_20px_-10px_rgba(67,97,238,0.44)]">
-                                    {isLoading && (
-                                        <span className="animate-spin border-2 border-white border-l-transparent rounded-full w-5 h-5 ltr:mr-4 rtl:ml-4 inline-block align-middle"></span>
-                                    )}
+                            <form className="space-y-5 dark:text-white" onSubmit={formik.handleSubmit}>
+                                <Input
+                                    id="username"
+                                    label="Username"
+                                    type="text"
+                                    placeholder="Enter Username"
+                                    icon={<IconUser fill={true} />}
+                                    error={formik.errors.username}
+                                    touched={formik.touched.username}
+                                    {...formik.getFieldProps('username')}
+                                />
+
+                                <Input
+                                    id="email"
+                                    label="Email"
+                                    type="email"
+                                    placeholder="Enter Email"
+                                    icon={<IconMail fill={true} />}
+                                    error={formik.errors.email}
+                                    touched={formik.touched.email}
+                                    {...formik.getFieldProps('email')}
+                                />
+
+                                <Input
+                                    id="password"
+                                    label="Password"
+                                    type="password"
+                                    placeholder="Enter Password"
+                                    icon={<IconLockDots fill={true} />}
+                                    error={formik.errors.password}
+                                    touched={formik.touched.password}
+                                    {...formik.getFieldProps('password')}
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={isLoading || !formik.isValid}
+                                    className="btn text-slate-50 btn-gradient !mt-6 w-full border-0 uppercase shadow-[0_10px_20px_-10px_rgba(67,97,238,0.44)]"
+                                >
+                                    {isLoading && <span className="animate-spin border-2 border-white border-l-transparent rounded-full w-5 h-5 ltr:mr-4 rtl:ml-4 inline-block align-middle"></span>}
                                     {isLoading ? 'Signing Up...' : 'Sign Up'}
                                 </button>
                             </form>
                             <div className="relative my-7 text-center md:mb-9">
                                 <span className="absolute inset-x-0 top-1/2 h-px w-full -translate-y-1/2 bg-white-light dark:bg-white-dark"></span>
-                                <span className="relative bg-white px-2 font-bold uppercase text-white-dark dark:bg-dark dark:text-white-light">or</span>
+                                <span className="relative bg-white rounded-full px-2 font-bold uppercase text-white-dark dark:bg-dark dark:text-white-light">or</span>
                             </div>
                             <div className="mb-10 md:mb-[60px]">
-                                <ul className="flex justify-center gap-3.5 text-white">
-                                    <li>
-                                        <Link
-                                            to="#"
-                                            className="inline-flex h-8 w-8 items-center justify-center rounded-full p-0 transition hover:scale-110"
-                                            style={{ background: 'linear-gradient(135deg, rgba(239, 18, 98, 1) 0%, rgba(67, 97, 238, 1) 100%)' }}
-                                        >
-                                            <IconInstagram />
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            to="#"
-                                            className="inline-flex h-8 w-8 items-center justify-center rounded-full p-0 transition hover:scale-110"
-                                            style={{ background: 'linear-gradient(135deg, rgba(239, 18, 98, 1) 0%, rgba(67, 97, 238, 1) 100%)' }}
-                                        >
-                                            <IconFacebookCircle />
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            to="#"
-                                            className="inline-flex h-8 w-8 items-center justify-center rounded-full p-0 transition hover:scale-110"
-                                            style={{ background: 'linear-gradient(135deg, rgba(239, 18, 98, 1) 0%, rgba(67, 97, 238, 1) 100%)' }}
-                                        >
-                                            <IconTwitter fill={true} />
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            to="#"
-                                            className="inline-flex h-8 w-8 items-center justify-center rounded-full p-0 transition hover:scale-110"
-                                            style={{ background: 'linear-gradient(135deg, rgba(239, 18, 98, 1) 0%, rgba(67, 97, 238, 1) 100%)' }}
-                                        >
-                                            <IconGoogle />
-                                        </Link>
-                                    </li>
-                                </ul>
+                                <button
+                                    type="button"
+                                    onClick={handleGoogleAuth}
+                                    className="flex w-full items-center justify-center gap-3 rounded-lg outline-none border border-gray-200 bg-white py-2 px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-700 dark:bg-black/30 dark:text-white-dark dark:hover:bg-black/40"
+                                    aria-label="Sign up with Google">
+                                    <IconGoogle className="h-6 w-6" />
+                                    <span>Continue with Google</span>
+                                </button>
                             </div>
                             <div className="text-center dark:text-white">
                                 Already have an account ?&nbsp;
-                                <Link to="/auth/boxed-signin" className="uppercase text-primary underline transition hover:text-black dark:hover:text-white">
+                                <Link to="/auth/login" className="uppercase text-primary underline transition hover:text-black dark:hover:text-white">
                                     SIGN IN
                                 </Link>
                             </div>

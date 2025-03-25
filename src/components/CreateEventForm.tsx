@@ -1,19 +1,90 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useFormik } from 'formik';
 import { toast } from 'react-hot-toast';
-import { motion } from 'framer-motion';
-import { Calendar, MapPin, Users, Image as ImageIcon } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Calendar, MapPin, Users, Image as ImageIcon, Ticket, Plus, X, Tag, DollarSign } from 'lucide-react';
+import * as Yup from 'yup';
 import { EventType } from '../types/event.type';
 import { Button } from './Button';
 import { eventValidationSchema } from '../validations/eventSchema';
 import { ErrorMessage } from './forms/ErrorMessage';
+
+// Add TicketType enum
+export enum TicketType {
+  STANDARD = 'STANDARD',
+  VIP = 'VIP',
+  VVIP = 'VVIP',
+}
+
+interface Ticket {
+  type: TicketType;
+  price: number;
+  quantity: number;
+  description?: string;
+}
 
 interface CreateEventFormProps {
     onSubmit: (formData: FormData) => Promise<void>;
     onCancel: () => void;
 }
 
+const ticketValidationSchema = Yup.object({
+    type: Yup.string()
+        .oneOf(Object.values(TicketType), 'Please select a valid ticket type')
+        .required('Ticket type is required'),
+    price: Yup.number()
+        .required('Price is required')
+        .min(0, 'Price must be greater than or equal to 0'),
+    quantity: Yup.number()
+        .required('Quantity is required')
+        .min(1, 'Quantity must be at least 1'),
+    description: Yup.string()
+});
+
+// Ticket Type Icons
+const ticketTypeIcons = {
+    [TicketType.STANDARD]: (className: string) => (
+        <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2 9V7C2 6.44772 2.44772 6 3 6H21C21.5523 6 22 6.44772 22 7V9C20.8954 9 20 9.89543 20 11C20 12.1046 20.8954 13 22 13V15C22 15.5523 21.5523 16 21 16H3C2.44772 16 2 15.5523 2 15V13C3.10457 13 4 12.1046 4 11C4 9.89543 3.10457 9 2 9Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+    ),
+    [TicketType.VIP]: (className: string) => (
+        <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 15L8.5 12L12 9M15.5 12L12 15M12 15V9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2"/>
+        </svg>
+    ),
+    [TicketType.VVIP]: (className: string) => (
+        <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+    ),
+};
+
 export const CreateEventForm: React.FC<CreateEventFormProps> = ({ onSubmit, onCancel }) => {
+    const [tickets, setTickets] = useState<Ticket[]>([]);
+    const [showTicketForm, setShowTicketForm] = useState(false);
+
+    const ticketFormik = useFormik({
+        initialValues: {
+            type: TicketType.STANDARD,
+            price: '',
+            quantity: '',
+            description: '',
+        },
+        validationSchema: ticketValidationSchema,
+        onSubmit: (values, { resetForm }) => {
+            setTickets([...tickets, {
+                type: values.type,
+                price: Number(values.price),
+                quantity: Number(values.quantity),
+                description: values.description,
+            }]);
+            setShowTicketForm(false);
+            resetForm();
+        },
+    });
+
     const formik = useFormik({
         initialValues: {
             name: '',
@@ -35,11 +106,19 @@ export const CreateEventForm: React.FC<CreateEventFormProps> = ({ onSubmit, onCa
                     }
                 });
 
+                tickets.forEach((ticket, index) => {
+                    formData.append(`tickets[${index}][type]`, ticket.type);
+                    formData.append(`tickets[${index}][price]`, ticket.price.toString());
+                    formData.append(`tickets[${index}][quantity]`, ticket.quantity.toString());
+                });
+
                 await onSubmit(formData);
-                toast.success('🎉 Event created successfully!');
+                window.dispatchEvent(new CustomEvent('EVENT_UPDATED'));
+                toast.success('Event created successfully!');
                 resetForm();
+                setTickets([]);
             } catch (error) {
-                toast.error('😔 Failed to create event');
+                toast.error('Failed to create event');
                 console.error('Error:', error);
             } finally {
                 setSubmitting(false);
@@ -70,6 +149,42 @@ export const CreateEventForm: React.FC<CreateEventFormProps> = ({ onSubmit, onCa
         bg-transparent outline-none transition-all duration-200 
         hover:border-gray-300 dark:hover:border-slate-600
     `;
+
+    const removeTicket = (index: number) => {
+        setTickets(tickets.filter((_, i) => i !== index));
+    };
+
+    const getTicketTypeDetails = (type: TicketType) => {
+        switch (type) {
+            case TicketType.STANDARD:
+                return {
+                    color: 'from-blue-500 to-blue-600',
+                    lightColor: 'bg-blue-500/10',
+                    textColor: 'text-blue-500',
+                    borderColor: 'border-blue-500',
+                    icon: ticketTypeIcons[TicketType.STANDARD],
+                    description: 'Basic access to the event'
+                };
+            case TicketType.VIP:
+                return {
+                    color: 'from-purple-500 to-purple-600',
+                    lightColor: 'bg-purple-500/10',
+                    textColor: 'text-purple-500',
+                    borderColor: 'border-purple-500',
+                    icon: ticketTypeIcons[TicketType.VIP],
+                    description: 'Premium access with additional benefits'
+                };
+            case TicketType.VVIP:
+                return {
+                    color: 'from-amber-500 to-amber-600',
+                    lightColor: 'bg-amber-500/10',
+                    textColor: 'text-amber-500',
+                    borderColor: 'border-amber-500',
+                    icon: ticketTypeIcons[TicketType.VVIP],
+                    description: 'Exclusive access with VIP treatment'
+                };
+        }
+    };
 
     return (
         <form onSubmit={formik.handleSubmit} className="space-y-6">
@@ -252,6 +367,305 @@ export const CreateEventForm: React.FC<CreateEventFormProps> = ({ onSubmit, onCa
                         />
                     </label>
                     <ErrorMessage message={formik.touched.image && formik.errors.image ? formik.errors.image : undefined} />
+                </div>
+            </div>
+
+            {/* Tickets Section */}
+            <div className="relative group">
+                <label className="absolute left-3 -top-2.5 bg-white dark:bg-slate-900 px-2 text-xs font-medium text-primary transition-all duration-200">
+                    <div className="flex items-center gap-2">
+                        <Ticket className="w-4 h-4" />
+                        Event Tickets
+                    </div>
+                </label>
+                <div className="border-2 border-gray-200 dark:border-slate-700 rounded-xl p-4">
+                    {/* Ticket Type Selection */}
+                    {!showTicketForm && tickets.length === 0 && (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            {Object.values(TicketType).map((type) => {
+                                const details = getTicketTypeDetails(type);
+                                return (
+                                    <motion.button
+                                        key={type}
+                                        type="button"
+                                        onClick={() => {
+                                            ticketFormik.setFieldValue('type', type);
+                                            setShowTicketForm(true);
+                                        }}
+                                        className={`
+                                            relative group overflow-hidden rounded-xl p-6
+                                            border-2 border-transparent hover:border-primary
+                                            bg-white dark:bg-slate-800 hover:shadow-xl
+                                            transition-all duration-300
+                                        `}
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                    >
+                                        <div className={`absolute inset-0 opacity-10 bg-gradient-to-br ${details.color}`} />
+                                        <div className="relative z-10">
+                                            <div className={`w-12 h-12 rounded-full ${details.lightColor} p-3 mb-4`}>
+                                                {details.icon(`${details.textColor} w-full h-full`)}
+                                            </div>
+                                            <h3 className={`text-lg font-semibold mb-2 ${details.textColor}`}>
+                                                {type}
+                                            </h3>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                {details.description}
+                                            </p>
+                                        </div>
+                                        <div className={`
+                                            absolute inset-0 border-2 border-dashed rounded-xl
+                                            opacity-0 group-hover:opacity-100
+                                            ${details.borderColor} transition-opacity duration-300
+                                        `} />
+                                    </motion.button>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    {/* Existing Tickets Display */}
+                    {tickets.length > 0 && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                            {tickets.map((ticket, index) => {
+                                const details = getTicketTypeDetails(ticket.type);
+                                return (
+                                    <motion.div
+                                        key={index}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -20 }}
+                                        className={`
+                                            relative group rounded-xl p-4 
+                                            bg-gradient-to-br ${details.color}
+                                            shadow-lg hover:shadow-xl transition-all duration-300
+                                        `}
+                                    >
+                                        <div className="absolute inset-0 bg-white dark:bg-slate-800 opacity-95 rounded-xl" />
+                                        <div className="relative z-10">
+                                            <button
+                                                type="button"
+                                                onClick={() => removeTicket(index)}
+                                                className="absolute -top-2 -right-2 p-1.5 bg-rose-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-rose-600"
+                                            >
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <div className={`w-8 h-8 rounded-full ${details.lightColor} p-2`}>
+                                                    {details.icon(`${details.textColor} w-full h-full`)}
+                                                </div>
+                                                <span className={`font-semibold ${details.textColor}`}>
+                                                    {ticket.type}
+                                                </span>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                                                        <DollarSign className="w-4 h-4" />
+                                                        <span className="text-xs font-medium">{ticket.price} MAD</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                                                        <Tag className="w-4 h-4" />
+                                                        <span className="text-xs">{ticket.quantity} tickets</span>
+                                                    </div>
+                                                </div>
+                                                {ticket.description && (
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                                                        {ticket.description}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    {/* Add Ticket Button or Form */}
+                    {!showTicketForm && tickets.length > 0 && (
+                        <Button
+                            type="button"
+                            onClick={() => setShowTicketForm(true)}
+                            className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-lg text-gray-500 dark:text-gray-400 hover:border-primary hover:text-primary transition-all duration-200"
+                            icon={false}
+                        >
+                            <Plus className="w-5 h-5" />
+                            Add Another Ticket Type
+                        </Button>
+                    )}
+
+                    {/* Ticket Form */}
+                    {showTicketForm && (
+                        <AnimatePresence>
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                className="bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-800/50 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-slate-700"
+                            >
+                                <form onSubmit={ticketFormik.handleSubmit} className="space-y-6">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Add New Ticket</h3>
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowTicketForm(false)}
+                                            className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full transition-colors duration-200"
+                                        >
+                                            <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                                        </button>
+                                    </div>
+
+                                    {/* Ticket Type Selection */}
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                                            Select Ticket Type
+                                        </label>
+                                        <div className="grid grid-cols-3 gap-4">
+                                            {Object.values(TicketType).map((type) => {
+                                                const details = getTicketTypeDetails(type);
+                                                const isSelected = ticketFormik.values.type === type;
+                                                return (
+                                                    <motion.button
+                                                        key={type}
+                                                        type="button"
+                                                        onClick={() => ticketFormik.setFieldValue('type', type)}
+                                                        className={`
+                                                            relative p-4 rounded-2xl border-2
+                                                            ${isSelected 
+                                                                ? `border-primary bg-primary/5 dark:bg-primary/10` 
+                                                                : 'border-gray-200 dark:border-slate-700 hover:border-primary/50'
+                                                            }
+                                                            transition-all duration-200
+                                                        `}
+                                                        whileHover={{ scale: 1.02 }}
+                                                        whileTap={{ scale: 0.98 }}
+                                                    >
+                                                        <div className="flex flex-col items-center">
+                                                            <div className={`
+                                                                w-8 h-8 mb-2
+                                                                ${isSelected ? 'text-primary' : 'text-gray-400 dark:text-gray-500'}
+                                                            `}>
+                                                                {details.icon("w-full h-full")}
+                                                            </div>
+                                                            <span className={`
+                                                                text-sm font-medium
+                                                                ${isSelected 
+                                                                    ? 'text-primary'
+                                                                    : 'text-gray-600 dark:text-gray-400'
+                                                                }
+                                                            `}>
+                                                                {type}
+                                                            </span>
+                                                        </div>
+                                                    </motion.button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                                        <div className="space-y-2">
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Price (MAD)
+                                            </label>
+                                            <div className="relative group">
+                                                <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
+                                                    <DollarSign className="w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors duration-200" />
+                                                </div>
+                                                <input
+                                                    type="number"
+                                                    {...ticketFormik.getFieldProps('price')}
+                                                    className={`
+                                                        w-full pl-10 pr-4 py-3 rounded-xl border-2
+                                                        ${ticketFormik.touched.price && ticketFormik.errors.price
+                                                            ? 'border-rose-300 dark:border-rose-500 focus:border-rose-500'
+                                                            : 'border-gray-200 dark:border-slate-700 focus:border-primary'
+                                                        }
+                                                        bg-white dark:bg-slate-800 
+                                                        transition-all duration-200 outline-none
+                                                    `}
+                                                    min="0"
+                                                    placeholder="Enter ticket price"
+                                                />
+                                                {ticketFormik.touched.price && ticketFormik.errors.price && (
+                                                    <div className="mt-1 text-xs text-rose-500">
+                                                        {ticketFormik.errors.price}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Quantity Available
+                                            </label>
+                                            <div className="relative group">
+                                                <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
+                                                    <Tag className="w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors duration-200" />
+                                                </div>
+                                                <input
+                                                    type="number"
+                                                    {...ticketFormik.getFieldProps('quantity')}
+                                                    className={`
+                                                        w-full pl-10 pr-4 py-3 rounded-xl border-2
+                                                        ${ticketFormik.touched.quantity && ticketFormik.errors.quantity
+                                                            ? 'border-rose-300 dark:border-rose-500 focus:border-rose-500'
+                                                            : 'border-gray-200 dark:border-slate-700 focus:border-primary'
+                                                        }
+                                                        bg-white dark:bg-slate-800 
+                                                        transition-all duration-200 outline-none
+                                                    `}
+                                                    min="1"
+                                                    placeholder="Number of tickets"
+                                                />
+                                                {ticketFormik.touched.quantity && ticketFormik.errors.quantity && (
+                                                    <div className="mt-1 text-xs text-rose-500">
+                                                        {ticketFormik.errors.quantity}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-end gap-3 pt-4">
+                                        <Button
+                                            type="button"
+                                            onClick={() => setShowTicketForm(false)}
+                                            className="px-6 py-2.5 text-sm rounded-xl border-2 border-gray-200 dark:border-slate-700 
+                                                     text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700
+                                                     transition-all duration-200"
+                                            icon={false}
+                                        >
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                ticketFormik.handleSubmit();
+                                            }}
+                                            className={`
+                                                px-6 py-2.5 text-sm rounded-xl
+                                                ${!ticketFormik.isValid || !ticketFormik.dirty
+                                                    ? 'bg-gray-300 dark:bg-slate-700 cursor-not-allowed'
+                                                    : 'bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70'
+                                                }
+                                                text-white transition-all duration-200
+                                                transform hover:scale-105 hover:shadow-lg
+                                            `}
+                                            icon={false}
+                                            disabled={!ticketFormik.isValid || !ticketFormik.dirty}
+                                        >
+                                            <span className="flex items-center gap-2">
+                                                <Ticket className="w-4 h-4" />
+                                                Add Ticket
+                                            </span>
+                                        </Button>
+                                    </div>
+                                </form>
+                            </motion.div>
+                        </AnimatePresence>
+                    )}
                 </div>
             </div>
 

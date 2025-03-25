@@ -7,11 +7,11 @@ const EventLoader = () => {
                 <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-secondary/30 rounded-full blur-3xl animate-pulse delay-300"></div>
 
                 {/* Main loader container */}
-                <div className="relative z-10 bg-white dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl p-8 shadow-xl border border-slate-200/20 dark:border-slate-700/30">
+                <div className="relative z-10">
                     {/* Calendar icon animation */}
                     <div className="relative w-16 h-16 mb-4 mx-auto">
                         {/* Animated rings */}
-                        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary to-secondary animate-spin-slow"></div>
+                        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#EF1262] to-[#4361EE] animate-spin-slow"></div>
                         <div className="absolute inset-[3px] rounded-xl bg-white dark:bg-slate-800"></div>
 
                         {/* Calendar icon */}
@@ -35,7 +35,7 @@ const EventLoader = () => {
 
                     {/* Loading text */}
                     <div className="text-center">
-                        <h3 className="text-lg font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
+                        <h3 className="text-base font-semibold bg-gradient-to-r from-[#EF1262] to-[#4361EE] bg-clip-text text-transparent mb-2">
                             Loading...
                         </h3>
 
@@ -50,7 +50,7 @@ const EventLoader = () => {
                     {/* Progress bar */}
                     <div className="mt-4 w-48">
                         <div className="h-1 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                            <div className="h-full bg-gradient-to-r from-primary to-secondary rounded-full animate-progress"></div>
+                            <div className="h-full bg-gradient-to-r from-[#EF1262] to-[#4361EE] rounded-full animate-progress"></div>
                         </div>
                     </div>
                 </div>

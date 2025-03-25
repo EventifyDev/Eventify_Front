@@ -1,21 +1,41 @@
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { NavLink, useLocation } from 'react-router-dom';
 import { toggleSidebar } from '../../store/themeConfigSlice';
 import AnimateHeight from 'react-animate-height';
 import { IRootState } from '../../store';
 import { useState, useEffect } from 'react';
 import EventifyLogo from '../EventifyLogo';
+import { selectUserRole, selectIsAuthenticated, getProfile, selectHasPermission } from '../../store/authSlice';
+import { useAppDispatch } from '../../store/hooks';
 
 const Sidebar = () => {
+    const dispatch = useAppDispatch();
+    const isAuthenticated = useSelector(selectIsAuthenticated);
     const [currentMenu, setCurrentMenu] = useState<string>('');
-    const [errorSubMenu, setErrorSubMenu] = useState(false);
     const themeConfig = useSelector((state: IRootState) => state.themeConfig);
     const semidark = useSelector((state: IRootState) => state.themeConfig.semidark);
     const location = useLocation();
-    const dispatch = useDispatch();
     const { t } = useTranslation();
+    const userRole = useSelector(selectUserRole);
+    const hasManageEventsPermission = useSelector(selectHasPermission('manage:events'));
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            dispatch(getProfile());
+        }
+    }, [isAuthenticated, dispatch]);
+
+     const hasRole = (roleName: string) => {
+        if (!userRole) return false;
+        return userRole.name === roleName;
+      };
+
+      const canManageEvents = hasRole('Administrator') || hasRole('Super Admin') || hasRole('Organizer') || hasManageEventsPermission;
+      const canManageRoles = useSelector(selectHasPermission('manage:roles')) || hasRole('Super Admin');
+      const canApproveEvents = hasRole('Administrator') || hasRole('Super Admin');
+
     const toggleMenu = (value: string) => {
         setCurrentMenu((oldValue) => {
             return oldValue === value ? '' : value;
@@ -43,7 +63,6 @@ const Sidebar = () => {
         if (window.innerWidth < 1024 && themeConfig.sidebar) {
             dispatch(toggleSidebar());
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location]);
 
     return (
@@ -54,17 +73,12 @@ const Sidebar = () => {
                 <div className="bg-white dark:bg-black h-full">
                     <div className="flex justify-between items-center px-4 py-3">
                         <NavLink to="/" className="main-logo flex items-center shrink-0 group">
-                            {/* Logo Icon */}
                             <EventifyLogo />
-
-                            {/* Logo Text */}
                             <div className="ml-3 relative group-hover:scale-105 transition-transform duration-300">
-                                <span className="text-2xl font-bold text-white relative flex items-center">
+                                <span className="text-2xl font-bold dark:text-white text-primary relative flex items-center">
                                     Eventify
                                 </span>
                             </div>
-
-                            {/* Decorative Glow Effects */}
                             <div className="absolute -top-10 -right-10 w-20 h-20 bg-[#4361EE]/20 rounded-full blur-xl group-hover:bg-[#EF1262]/20 transition-colors duration-300"></div>
                             <div className="absolute -bottom-10 -left-10 w-20 h-20 bg-[#EF1262]/20 rounded-full blur-xl group-hover:bg-[#4361EE]/20 transition-colors duration-300"></div>
                         </NavLink>
@@ -85,27 +99,15 @@ const Sidebar = () => {
                             <li className="menu nav-item">
                                 <button type="button" className={`${currentMenu === 'dashboard' ? 'active' : ''} nav-link group w-full`} onClick={() => toggleMenu('dashboard')}>
                                     <div className="flex items-center">
-                                        <svg className="group-hover:!text-primary shrink-0" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path
-                                                opacity="0.5"
-                                                d="M2 12.2039C2 9.91549 2 8.77128 2.5192 7.82274C3.0384 6.87421 3.98695 6.28551 5.88403 5.10813L7.88403 3.86687C9.88939 2.62229 10.8921 2 12 2C13.1079 2 14.1106 2.62229 16.116 3.86687L18.116 5.10812C20.0131 6.28551 20.9616 6.87421 21.4808 7.82274C22 8.77128 22 9.91549 22 12.2039V13.725C22 17.6258 22 19.5763 20.8284 20.7881C19.6569 22 17.7712 22 14 22H10C6.22876 22 4.34315 22 3.17157 20.7881C2 19.5763 2 17.6258 2 13.725V12.2039Z"
-                                                fill="currentColor"
-                                            />
-                                            <path
-                                                d="M9 17.25C8.58579 17.25 8.25 17.5858 8.25 18C8.25 18.4142 8.58579 18.75 9 18.75H15C15.4142 18.75 15.75 18.4142 15.75 18C15.75 17.5858 15.4142 17.25 15 17.25H9Z"
-                                                fill="currentColor"
-                                            />
-                                        </svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.5" d="M15.29 20.663h3.017a2.194 2.194 0 0 0 2.193-2.194v-6.454a3.3 3.3 0 0 0-1.13-2.48l-5.93-5.166a2.194 2.194 0 0 0-2.88 0L4.63 9.534a3.3 3.3 0 0 0-1.13 2.481v6.454c0 1.212.982 2.194 2.194 2.194h3.29m6.306 0v-6.581c0-.908-.736-1.645-1.645-1.645H10.63c-.909 0-1.645.737-1.645 1.645v6.581m6.306 0H8.984"/></svg>
                                         <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">{t('dashboard')}</span>
                                     </div>
-
                                     <div className={currentMenu === 'dashboard' ? 'rotate-90' : 'rtl:rotate-180'}>
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M9 5L15 12L9 19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
                                     </div>
                                 </button>
-
                                 <AnimateHeight duration={300} height={currentMenu === 'dashboard' ? 'auto' : 0}>
                                     <ul className="sub-menu text-gray-500">
                                         <li>
@@ -115,38 +117,74 @@ const Sidebar = () => {
                                 </AnimateHeight>
                             </li>
 
-                            <li className="menu nav-item">
-                                <button type="button" className={`${currentMenu === 'events' ? 'active' : ''} nav-link group w-full`} onClick={() => toggleMenu('events')}>
-                                    <div className="flex items-center">
-                                        <svg className="group-hover:!text-primary shrink-0" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path
-                                                opacity="0.5"
-                                                d="M16.75 3.56V2c0-.41-.34-.75-.75-.75s-.75.34-.75.75v1.5h-6.5V2c0-.41-.34-.75-.75-.75s-.75.34-.75.75v1.56c-2.7.25-4.01 1.86-4.21 4.25-.02.29.22.53.5.53h16.92c.29 0 .53-.25.5-.53-.2-2.39-1.51-4-4.21-4.25Z"
-                                                fill="currentColor"
-                                            />
-                                            <path
-                                                d="M20 9.84c0-.41-.34-.75-.75-.75H4.75c-.41 0-.75.34-.75.75 0 0 .01 1.1.01 1.19.15 4.93 2.93 7.07 7.99 7.07s7.84-2.14 7.99-7.07c0-.09.01-1.19.01-1.19Z"
-                                                fill="currentColor"
-                                            />
-                                        </svg>
-                                        <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">{t('events')}</span>
-                                    </div>
+                            {canManageEvents && (
+                                <li className="menu nav-item">
+                                    <button type="button" className={`${currentMenu === 'events' ? 'active' : ''} nav-link group w-full`} onClick={() => toggleMenu('events')}>
+                                        <div className="flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 12c0-3.771 0-5.657 1.172-6.828S6.229 4 10 4h4c3.771 0 5.657 0 6.828 1.172S22 8.229 22 12v2c0 3.771 0 5.657-1.172 6.828S17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172S2 17.771 2 14z"/><path strokeLinecap="round" d="M7 4V2.5M17 4V2.5M2.5 9h19"/></g></svg>
+                                            <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">{t('events')}</span>
+                                        </div>
+                                        <div className={currentMenu === 'events' ? 'rotate-90' : 'rtl:rotate-180'}>
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M9 5L15 12L9 19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                        </div>
+                                    </button>
+                                    <AnimateHeight duration={300} height={currentMenu === 'events' ? 'auto' : 0}>
+                                        <ul className="sub-menu text-gray-500">
+                                            <li>
+                                                <NavLink to="/dashboard/events">{t('all_events')}</NavLink>
+                                            </li>
+                                        </ul>
+                                    </AnimateHeight>
+                                </li>
+                            )}
 
-                                    <div className={currentMenu === 'events' ? 'rotate-90' : 'rtl:rotate-180'}>
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M9 5L15 12L9 19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
-                                    </div>
-                                </button>
+                            {canApproveEvents && (
+                                <li className="menu nav-item">
+                                    <button type="button" className={`${currentMenu === 'approve-events' ? 'active' : ''} nav-link group w-full`} onClick={() => toggleMenu('approve-events')}>
+                                        <div className="flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"><path strokeDasharray="64" strokeDashoffset="64" d="M3 12c0 -4.97 4.03 -9 9 -9c4.97 0 9 4.03 9 9c0 4.97 -4.03 9 -9 9c-4.97 0 -9 -4.03 -9 -9Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.6s" values="64;0"/></path><path strokeDasharray="14" strokeDashoffset="14" d="M8 12l3 3l5 -5"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="14;0"/></path></g></svg>
+                                            <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">{t('approve events')}</span>
+                                        </div>
+                                        <div className={currentMenu === 'approve-events' ? 'rotate-90' : 'rtl:rotate-180'}>
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M9 5L15 12L9 19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                        </div>
+                                    </button>
+                                    <AnimateHeight duration={300} height={currentMenu === 'approve-events' ? 'auto' : 0}>
+                                        <ul className="sub-menu text-gray-500">
+                                            <li>
+                                                <NavLink to="/dashboard/approve-events">{t('pending events')}</NavLink>
+                                            </li>
+                                        </ul>
+                                    </AnimateHeight>
+                                </li>
+                            )}
 
-                                <AnimateHeight duration={300} height={currentMenu === 'events' ? 'auto' : 0}>
-                                    <ul className="sub-menu text-gray-500">
-                                        <li>
-                                            <NavLink to="/events">{t('all_events')}</NavLink>
-                                        </li>
-                                    </ul>
-                                </AnimateHeight>
-                            </li>
+                            {canManageRoles && (
+                                <li className="menu nav-item">
+                                    <button type="button" className={`${currentMenu === 'roles' ? 'active' : ''} nav-link group w-full`} onClick={() => toggleMenu('roles')}>
+                                        <div className="flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 2048 2048"><path fill="currentColor" d="M2048 1573v475h-512v-256h-256v-256h-256v-207q-74 39-155 59t-165 20q-97 0-187-25t-168-71t-142-110t-111-143t-71-168T0 704q0-97 25-187t71-168t110-142T349 96t168-71T704 0q97 0 187 25t168 71t142 110t111 143t71 168t25 187q0 51-8 101t-23 98zm-128 54l-690-690q22-57 36-114t14-119q0-119-45-224t-124-183t-183-123t-224-46q-119 0-224 45T297 297T174 480t-46 224q0 119 45 224t124 183t183 123t224 46q97 0 190-33t169-95h89v256h256v256h256v256h256zM512 384q27 0 50 10t40 27t28 41t10 50q0 27-10 50t-27 40t-41 28t-50 10q-27 0-50-10t-40-27t-28-41t-10-50q0-27 10-50t27-40t41-28t50-10"/></svg>
+                                            <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">{t('roles management')}</span>
+                                        </div>
+                                        <div className={currentMenu === 'roles' ? 'rotate-90' : 'rtl:rotate-180'}>
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M9 5L15 12L9 19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                        </div>
+                                    </button>
+                                    <AnimateHeight duration={300} height={currentMenu === 'roles' ? 'auto' : 0}>
+                                        <ul className="sub-menu text-gray-500">
+                                            <li>
+                                                <NavLink to="/dashboard/roles-management">{t('manage roles')}</NavLink>
+                                            </li>
+                                        </ul>
+                                    </AnimateHeight>
+                                </li>
+                            )}
                         </ul>
                     </PerfectScrollbar>
                 </div>

@@ -1,32 +1,42 @@
-export class TokenService {
-  private static readonly TOKEN_KEY = 'access_token';
+import Cookies from 'js-cookie';
 
-  static setToken(token: string): void {
-      // Stockage dans localStorage
-      localStorage.setItem(this.TOKEN_KEY, token);
-      // Stockage dans un cookie sécurisé comme backup
-      document.cookie = `${this.TOKEN_KEY}=${token}; path=/; secure; samesite=strict`;
-  }
+export class TokenService {
+  private static readonly REFRESH_TOKEN_KEY = 'refreshToken';
+  private static readonly ACCESS_TOKEN_KEY = 'accessToken';
 
   static getToken(): string | null {
-      // Essayer d'abord localStorage
-      const token = localStorage.getItem(this.TOKEN_KEY);
-      if (token) return token;
-
-      // Fallback sur les cookies
-      const cookies = document.cookie.split(';');
-      const tokenCookie = cookies.find(c => c.trim().startsWith(`${this.TOKEN_KEY}=`));
-      return tokenCookie ? tokenCookie.split('=')[1] : null;
+    // For browser environments, prefer cookies
+    const cookieToken = Cookies.get('Authentication');
+    if (cookieToken) {
+      return cookieToken;
+    }
+    
+    return localStorage.getItem(this.ACCESS_TOKEN_KEY);
   }
 
-  static clearToken(): void {
-      // Nettoie localStorage
-      localStorage.removeItem(this.TOKEN_KEY);
-      // Nettoie le cookie
-      document.cookie = `${this.TOKEN_KEY}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+  static getRefreshToken(): string | null {
+    const cookieRefreshToken = Cookies.get('Refresh');
+    if (cookieRefreshToken) {
+      return cookieRefreshToken;
+    }
+    
+    return localStorage.getItem(this.REFRESH_TOKEN_KEY);
   }
 
   static isAuthenticated(): boolean {
-      return !!this.getToken();
+    return !!this.getToken();
+  }
+
+  static setToken(token: string): void {
+    localStorage.setItem(this.ACCESS_TOKEN_KEY, token);
+  }
+
+  static setRefreshToken(token: string): void {
+    localStorage.setItem(this.REFRESH_TOKEN_KEY, token);
+  }
+
+  static clearTokens(): void {
+    localStorage.removeItem(this.ACCESS_TOKEN_KEY);
+    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
   }
 }

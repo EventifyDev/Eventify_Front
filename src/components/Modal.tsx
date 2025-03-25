@@ -48,7 +48,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
           <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
           
           {/* Modal Content */}
-          <div className="relative bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-gray-100 dark:border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden">
+          <div className="relative bg-white dark:bg-slate-900/95 backdrop-blur-sm border border-gray-100 dark:border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden">
             {/* Top gradient line */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-primary/50 to-primary" />
             
@@ -72,7 +72,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
             </div>
   
             {/* Content with subtle shadow */}
-            <div className="relative p-6 bg-gradient-to-b from-transparent to-white/50 dark:to-slate-900/50">
+            <div className="relative p-6 bg-gradient-to-b from-transparent to-white dark:to-slate-900/50">
               {children}
             </div>
           </div>

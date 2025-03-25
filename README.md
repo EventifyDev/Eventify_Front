@@ -157,4 +157,3 @@ Track our project progress on [Jira](https://elmorjanimohamed.atlassian.net/jira
 <div align="center">
   <sub>Built with ❤️ by Mohamed Elmorjani</sub>
 </div>
-```

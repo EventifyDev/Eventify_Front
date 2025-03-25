@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { LineChart, Line, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
-import { EventService } from '../services/event.service';
-import { ParticipantService } from '../services/participant.service';
-import { Event, EventType } from '../types/event.type';
+import { EventService } from '../../services/event.service';
+import { ParticipantService } from '../../services/participant.service';
+import { Event, EventType } from '../../types/event.type';
 import {
     TrendingUp,
     TrendingDown,
@@ -15,8 +15,8 @@ import {
     Clock,
     Star
 } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
-import EventLoader from '../components/EventLoader';
+import { useAuth } from '../../hooks/useAuth';
+import EventLoader from '../../components/EventLoader';
 
 // Types pour les statistiques
 interface EventStats {

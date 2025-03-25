@@ -126,7 +126,7 @@ const Header = () => {
 
                             {/* Logo Text */}
                             <div className="ml-3 relative group-hover:scale-105 transition-transform duration-300">
-                                <span className="text-2xl font-bold text-white relative flex items-center">
+                                <span className="text-2xl font-bold dark:text-white text-primary relative flex items-center">
                                     Eventify
                                 </span>
                             </div>

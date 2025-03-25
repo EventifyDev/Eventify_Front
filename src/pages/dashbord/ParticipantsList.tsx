@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Pencil, Trash2, Search, FileSpreadsheet, FileText } from 'lucide-react';
-import { Participant } from '../types/participant.type';
-import { ParticipantService } from '../services/participant.service';
-import { exportToPDF, exportToExcel } from '../utils/exportUtils';
-import { ConfirmationModal } from '../components/ConfirmationModal';
-import { Modal } from '../components/Modal';
-import { EditParticipantForm } from '../components/EditParticipantForm';
+import { Participant } from '../../types/participant.type';
+import { ParticipantService } from '../../services/participant.service';
+import { exportToPDF, exportToExcel } from '../../utils/exportUtils';
+import { ConfirmationModal } from '../../components/ConfirmationModal';
+import { Modal } from '../../components/Modal';
+import { EditParticipantForm } from '../../components/EditParticipantForm';
 
 const ParticipantsList = () => {
     const { event_id } = useParams();
